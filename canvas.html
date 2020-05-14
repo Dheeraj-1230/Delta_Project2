@@ -1,0 +1,202 @@
+<html>
+    <head>
+        <title>
+            Dheeraj Kumar Jha
+        </title>
+        <link rel="stylesheet" type="text/css" href="canvas.css">
+    </head>
+    <body id="bod">
+       <center><canvas id="game_stage" width="400" height="600"></canvas>
+          <script src="canvas.js"></script>
+      <span></span>
+      <p id="ins">
+          <h2 id="fea1">FEATURES</h2>
+          <h3 id="h31">1.Create a game where user</h3>
+          <h3 id="h32">presses a button or taps on the</h3>
+          <h3 id="h33">screen to make a ball jump.</h3>
+          <h3 id="h34">2.Generate random circular</h3>
+          <h3 id="h35">obstacles with atleast two</h3>
+          <h3 id="h36">colours on each obstacle.</h3>
+          <h3 id="h37">3.Touching an obstacle of</h3>
+          <h3 id="h38">different colour results in a</h3>
+          <h3 id="h39">game over.</h3>
+      </p>
+      <h2 id="fea">FEATURES</h2>
+      <p id="ins2">
+        <h3 id="h231">4.Update the high scores in real</h3>
+        <h3 id="h232">time.</h3>
+        <h3 id="h233">5.Have more than two colours and</h3>
+        <h3 id="h234">add a mechanism to switch the</h3>
+        <h3 id="h235">colour of the ball.</h3>
+        <h3 id="h236">6.Generate different types of</h3>
+        <h3 id="h237"> obstacles</h3>
+        <h3 id="h238">7.Add sound effect.</h3>
+    </p>
+      </center>
+    <span id="cover"></span>
+    <h1 id="hscore"></h1>
+    
+    </body>
+</html>
+<script>
+    var highscore=0;
+    var game={draw:game_stage.getContext('2d'),h:600,w:400,bg_color:"white",xpos:0,ypos:0,start:false,gameover:false};
+    var player={xpos:200-7,ypos:550,h:14,w:14,color:"",rot:0};
+    var world={xpos:210,ypos:550,rotx:0,roty:90};
+    var score=0;
+    var coords={
+        x_axis:function(x)
+        {   
+            return (x*Math.cos(world.rotx*(Math.PI/180))+world.xpos);
+        },
+        y_axis:function get_y(y)
+        {
+            return (y*Math.sin(world.roty*(Math.PI/180))+world.ypos);    
+        }
+    }
+    var _obs=[];
+    var colors=['rgb(35,111,16)','rgb(20,74,235)','red'];
+    player.color=colors[Math.floor(Math.random()*colors.length)];
+    var gravity=0;
+    var forceup=0;
+    function main_()
+    {
+        if(game.start==true)
+        {
+        window.requestAnimationFrame(main_); 
+        }
+        game.draw.fillStyle=game.bg_color;
+        game.draw.fillRect(game.xpos,game.ypos,game.w,game.h);
+        
+        if(game.gameover==false)
+        {
+            player_();
+        }
+        obs_();
+        if(coords.y_axis(_obs[_obs.length-1].next*-1)>=0)
+        {
+          create_obs_();
+        }
+        game.draw.font="15px algerian";
+        game.draw.fillStyle="black";
+        game.draw.fillText("POINTS: "+score,20,40);
+    }
+    
+    function player_()
+    {
+        player.rot+=1;
+        if(player.rot>=360)
+        {
+            player.rot=0;
+        }
+        game.draw.save();
+            game.draw.translate(player.xpos+7,player.ypos+7);
+            game.draw.rotate(player.rot*(Math.PI/180));
+            game.draw.fillStyle=player.color;
+            game.draw.fillRect(-7,-7,player.w,player.h);
+        game.draw.restore();
+        if(player.ypos>400)
+        {
+            player.ypos+=forceup-gravity;
+        }
+        else
+        {
+            if(forceup-gravity<0)
+            {
+                world.ypos-=forceup-gravity;
+            }
+            else
+            {
+               player.ypos+=forceup-gravity; 
+            }
+        }
+        gravity-=0.19;
+        if(player.ypos+player.w>=game.h&&game.gameover==false)
+        {
+            game.gameover=true; 
+            if(highscore<score)
+            {
+                highscore=score;
+            }  
+            gameover();        
+        }
+    }
+   
+    function obs_()
+    {
+        for(var i=0;i<_obs.length;i++)
+        {
+            _obs[i].draw(i);
+        }
+        for(var i=0;i<_obs.length;i++)
+        {
+            _obs[i].check(i);
+        }
+    }
+    _obs.push(new obs2());
+    _obs[_obs.length-1].init(colors[Math.floor(Math.random()*colors.length)],0,150);
+    var create_obs=false;
+    create_obs=true;
+    function create_obs_()
+    {
+        if(create_obs==true)
+        {
+            var rand=Math.floor(Math.random()*7);
+            if(rand==0)
+            {
+                _obs.push(new obs1());
+                _obs[_obs.length-1].init(colors[Math.floor(Math.random()*colors.length)],0, _obs[_obs.length-2].next+90);
+            }
+            else if(rand==1)
+            {
+                _obs.push(new obs3());
+                _obs[_obs.length-1].init(colors[Math.floor(Math.random()*colors.length)],0, _obs[_obs.length-2].next+40);
+            }
+            else if(rand==2)
+            {
+                _obs.push(new obs4());
+                _obs[_obs.length-1].init(colors[Math.floor(Math.random()*colors.length)],0, _obs[_obs.length-2].next);
+            }
+            else
+            {
+                _obs.push(new obs5());
+                _obs[_obs.length-1].init(colors[Math.floor(Math.random()*colors.length)],0, _obs[_obs.length-2].next+80);
+            }
+        }
+    }
+    create_obs_();
+    create_obs_();
+    function gameover()
+     {
+         document.getElementById("hscore").innerHTML="GAMEOVER";
+     }
+    bod.onkeypress=function(start1)
+    {
+        if(start1.keyCode==32 ){
+            if(game.start==false){
+                game.start=true; 
+                main_();
+                var sound= new Audio("colorswitch.mp3");
+         sound.play();
+            }
+            gravity=0;
+            forceup=-3.5;
+        }   
+    }
+    window.addEventListener("click",start2);
+    function start2()
+    {
+            if(game.start==false){
+                game.start=true; 
+                main_();
+                var sound= new Audio("colorswitch.mp3");
+         sound.play();
+            }
+            gravity=0;
+            forceup=-3.5;
+     }
+    window.onload=()=>
+    {
+        main_();
+    }
+</script>
